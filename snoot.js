@@ -1,5 +1,4 @@
 /*
-
     snoot.js
     Form Validation functions for snoot.html
     
@@ -13,6 +12,7 @@
 var twentyNine = document.createDocumentFragment();
 var thirty = document.createDocumentFragment();
 var thirtyOne = document.createDocumentFragment();
+var formValidity = false;
 
 // functions to turn off select list defaults
 function removeSelectDefaults() {
@@ -49,14 +49,12 @@ function updateDays() {
     }
     // if feb and 2020 - leap year
     if (selectedMonth === "2" && deliveryYear.options[deliveryYear.selectedIndex].value === "2020") {
-        deliveryDay.appendChild(twentyNine.cloneNode(true));
-        
+        deliveryDay.appendChild(twentyNine.cloneNode(true));       
     }
 
     //else 30 day month - thirty
     else if (selectedMonth === "4" || selectedMonth === "6" || selectedMonth === "9" || selectedMonth === "11") {
-        deliveryDay.appendChild(thirty.cloneNode(true));
-        
+        deliveryDay.appendChild(thirty.cloneNode(true));  
     }
 
     //else 31 month - thirtyOne
@@ -83,6 +81,27 @@ function setUpPage() {
     createEventListeners();
 }
 
+// function to validate entire formValidity
+function validateForm(evt) {
+    if (evt.preventDefault) {
+        evt.preventDefault();
+    }
+    else {
+        evt.returnValue = false;
+    }
+    
+    if (formValidity === true) {
+        document.getElementById('errorText').innerHTML = "";
+        document.getElementById('errorText').style.display = "none";
+        document.getElementsByTagName("form")[0].submit();
+    } 
+    else {
+        document.getElementById('errorText').innerHTML = "Please Fix the indicated problems and then resubmit you order.";
+        document.getElementById('errorText').style.display = "block";
+        scroll(0,0);
+    }
+}
+
 //Function to create out event listeners
 function createEventListeners() {
      var deliveryMonth = document.getElementById("delivMo");
@@ -103,6 +122,38 @@ function createEventListeners() {
        messageBox.addEventListener("change", autoCheckCustom, false);
     } else if (messageBox.attachEvent) {
         messageBox.attachEvent("onchange", autoCheckCustom, false);
+    }
+    var same = document.getElementById("sameAddr");
+     if (same.addEventListener) {
+       same.addEventListener("change", copyBillingAddress, false);
+    } else if (same.attachEvent) {
+        same.attachEvent("onchange", copyBillingAddress, false);
+    } 
+    var form = document.getElementsByTagName("form")[0];
+     if (form.addEventListener) {
+       form.addEventListener("submit", validateForm, false);
+    } else if (form.attachEvent) {
+        form.attachEvent("onsubmit", validateForm);
+    }
+}
+
+//functions to copy delivery to billing address
+function copyBillingAddress() {
+    var billingInputElments = document.querySelectorAll("#billingAddress input");
+    var deliveryInputElments = document.querySelectorAll("#deliveryAddress input");
+    // if checkbox checked - copy all feilds
+    if (document.getElementById("sameAddr").checked) {
+        for(var i = 0; i < billingInputElments.length; i++) {
+            deliveryInputElments[i+1].value = billingInputElments[i].value;
+        }
+        document.querySelector("#deliveryAddress select").value = document.querySelector("#billingAddress select").value;
+    }
+    // else erase all fields
+    else  {
+         for(var i = 0; i < billingInputElments.length; i++) {
+            deliveryInputElments[i+1].value = "";
+        }
+        document.querySelector("#deliveryAddress select").value = -1;
     }
 }
 
